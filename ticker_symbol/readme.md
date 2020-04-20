@@ -5,3 +5,5 @@
   - https://www.tradinggraphs.com/2012/05/06/complete-us-stock-symbols-list-nasdaq-nyse-amex/
 
   - http://www.eoddata.com/myaccount/default.aspx
+  
+  - https://www.marketwatch.com/tools/markets/stocks/country/united-states/
