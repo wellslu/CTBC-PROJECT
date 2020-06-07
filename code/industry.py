@@ -1,3 +1,4 @@
+import pandas as pd
 industry = pd.read_csv('industry2.csv')
 lone_pine_indus = lone_pine.merge(industry[['tic', 'gsector', 'ggroup']], left_on='Ticker', right_on='tic', how='left')
 
