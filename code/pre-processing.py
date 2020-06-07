@@ -5,8 +5,8 @@ import statistics as stat
 from scipy import stats
 import multiprocessing as mp
 from function import test_function
-lone_pine = pd.read_csv('lone_pine.csv')
-crsp_data = pd.read_csv('StockPriceMonthly.csv', encoding='utf8', low_memory=False)
+lone_pine = pd.read_csv('lone pine/lone_pine.csv')
+crsp_data = pd.read_csv('lone pine/StockPriceMonthly.csv', encoding='utf8', low_memory=False)
 
 lone_pine.drop(['% Port', '% OS', 'Hist', 'Change', 'Change.1'], axis=1, inplace=True)
 
