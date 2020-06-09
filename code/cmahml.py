@@ -77,4 +77,4 @@ for date, df in tqdm_notebook(profolio.groupby(['date'])):
     df.loc[:, 'cma'] = cma_list
     all_profolio = pd.concat([all_profolio, df], ignore_index=True, sort=False)
 
-all_profolio
+all_profolio['date'] = all_profolio['date'].apply(date_col)

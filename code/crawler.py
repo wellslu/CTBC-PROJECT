@@ -3,11 +3,11 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def crawler():
+def crawler(url):
     col = ['Name', 'Ticker', 'Class', 'Shares', 'Change', 'Value', 'Change', '% Port', '% OS', 'Hist', 'Date']
     results = pd.DataFrame({})
     for option in tqdm_notebook(options):
-        res = requests.get('https://www.rocketfinancial.com/Holdings.aspx?fID=386')
+        res = requests.get(url)
         soup = BeautifulSoup(res.text,'html.parser')
         options = [soup.select('select')[0].select('option')[i].get('value') for i in range(len(soup.select('select')[0].select('option')))]
         options = options[1:]
@@ -22,7 +22,7 @@ def crawler():
         '__EVENTVALIDATION': __EVENTVALIDATION,
         'lstPeriods': option,
         'hiddenInputToUpdateATBuffer_CommonToolkitScripts': '1'}
-        res = requests.post('https://www.rocketfinancial.com/Holdings.aspx?fID=386', data = formdata)
+        res = requests.post(url, data = formdata)
         soup = BeautifulSoup(res.text,'html.parser')
         __EVENTVALIDATION = soup.select("input")[3].get('value')
         __VIEWSTATE = soup.select("input")[1].get('value')
@@ -38,7 +38,7 @@ def crawler():
                 '__EVENTVALIDATION': __EVENTVALIDATION,
                 'lstPeriods': option,
                 'hiddenInputToUpdateATBuffer_CommonToolkitScripts': '1'}
-                res = requests.post('https://www.rocketfinancial.com/Holdings.aspx?fID=386', data = formdata)
+                res = requests.post(url, data = formdata)
                 soup = BeautifulSoup(res.text,'html.parser')
                 __EVENTVALIDATION = soup.select("input")[3].get('value')
                 __VIEWSTATE = soup.select("input")[1].get('value')
