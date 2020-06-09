@@ -48,5 +48,3 @@ def crawler(url):
                     break
                 results = pd.concat([results, df], ignore_index=True)
     return results
-
-results = crawler()

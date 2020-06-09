@@ -1,6 +1,4 @@
 import pandas as pd
-industry = pd.read_csv('lone pine/industry2.csv')
-lone_pine_indus = lone_pine.merge(industry[['tic', 'gsector', 'ggroup']], left_on='Ticker', right_on='tic', how='left')
 
 def indus_sort(data, date):
     pre_date = []
@@ -61,6 +59,4 @@ def indus_sort(data, date):
         else:
             break
     
-    return dic2_new, dic4_new
-
-indus_sort(lone_pine_indus, '200806')
+    return pre_date,dic2_new, dic4_new
