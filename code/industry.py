@@ -10,14 +10,11 @@ def indus_sort(data, date):
     else:
         date_list.append(str(last_date+3))
     # get pre 4 seasons date
-    try:
-        index = date_list.index(date)
-        for r in range(4):
-            if index > 0:
-                index-=1
-                pre_date.append(date_list[index])
-    except:
-        return 'date error'
+    index = date_list.index(date)
+    for r in range(4):
+        if index > 0:
+            index-=1
+            pre_date.append(date_list[index])
     
     data = data[data['Date'].isin(pre_date)]
     data2 = data[data['gsector'].notnull()]
@@ -59,4 +56,4 @@ def indus_sort(data, date):
         else:
             break
     
-    return pre_date,dic2_new, dic4_new
+    return pre_date, dic2_new, dic4_new
