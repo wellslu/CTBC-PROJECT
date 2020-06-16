@@ -197,15 +197,15 @@ class Tool:
     
     def svc_model(self, x, y):
         score_sum = 0
-        for i in range(10):
+        for i in range(5): #var:10 means 10 times testing
             x_train, x_test, y_train, y_test = train_test_split(x, y.ravel(), test_size=0.25)
             clf = SVC(kernel='rbf')
             clf.fit(x_train, y_train)
             y_pred = clf.predict(x_test)
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
-        score_mean = score_sum / 10
-        if score_mean >= 0.75:
+        score_mean = score_sum / 5 #var:10 means 10 times testing
+        if score_mean >= 0.75:  #var:0.75 means thresthold
             clf = SVC(kernel='rbf')
             clf.fit(x, y.ravel())
             return clf
@@ -214,15 +214,15 @@ class Tool:
     
     def rft_model(self, x, y):
         score_sum = 0
-        for i in range(10):
+        for i in range(5): #var:10 means 10 times testing
             x_train, x_test, y_train, y_test = train_test_split(x, y.ravel(), test_size=0.25)
             model = RandomForestClassifier(n_estimators=1000)
             model.fit(x_train, y_train)
             y_pred = model.predict(x_test)
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
-        score_mean = score_sum / 10
-        if score_mean >= 0.75:
+        score_mean = score_sum / 5 #var:10 means 10 times testing
+        if score_mean >= 0.75: #var:0.75 means thresthold
             model = RandomForestClassifier(n_estimators=1000)
             model.fit(x, y.ravel())
             return model

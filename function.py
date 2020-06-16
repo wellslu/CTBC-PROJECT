@@ -10,7 +10,6 @@ class test_fun:
         industry = pd.read_csv('industry2.csv')
         asset = pd.read_csv('asset and book value.csv')
         our_revenue = []
-        intersection_revenue = []
         lone_pine_revenue = []
         f13_data1 = f13_data.copy()
         price_data1 = price_data.copy()
@@ -42,9 +41,26 @@ class test_fun:
         last_buy_count = len(feature_data[feature_data['buy']==1])
         not_buy_count = len(feature_data[feature_data['buy']==0])
         start = last_buy_count+1
+        try:
+            while start + last_buy_count * 4 < len(feature_data):
+                t_data = pd.concat([feature_data[:last_buy_count],feature_data[start:start+last_buy_count*2]])
+                x = t_data[['volatility', 'liquidity', '52 week high', 'momentum']].values
+                y = t_data[['buy']].values
+                x_test = testing_data[['volatility', 'liquidity', '52 week high', 'momentum']].values
+                svc_clf = tool.svc_model(x, y)
+                if svc_clf is not False:
+                    y_pred = svc_clf.predict(x_test)
+                    testing_data.loc[:, 'svc'] = y_pred
+                    testing_data = testing_data[testing_data['svc']==1]
+                x_test = testing_data[['volatility', 'liquidity', '52 week high', 'momentum']].values
+                rft_clf = tool.rft_model(x, y)
+                if rft_clf is not False:
+                    y_pred = rft_clf.predict(x_test)
+                    testing_data.loc[:, 'rtf'] = y_pred
+                    testing_data = testing_data[testing_data['rtf']==1]
+                start = start+last_buy_count*2
 
-        while start + last_buy_count * 4 < len(feature_data):
-            t_data = pd.concat([feature_data[:last_buy_count],feature_data[start:start+last_buy_count*2]])
+            t_data = pd.concat([feature_data[:last_buy_count],feature_data[start:]])
             x = t_data[['volatility', 'liquidity', '52 week high', 'momentum']].values
             y = t_data[['buy']].values
             x_test = testing_data[['volatility', 'liquidity', '52 week high', 'momentum']].values
@@ -59,38 +75,20 @@ class test_fun:
                 y_pred = rft_clf.predict(x_test)
                 testing_data.loc[:, 'rtf'] = y_pred
                 testing_data = testing_data[testing_data['rtf']==1]
-            start = start+last_buy_count*2
 
-        t_data = pd.concat([feature_data[:last_buy_count],feature_data[start:]])
-        x = t_data[['volatility', 'liquidity', '52 week high', 'momentum']].values
-        y = t_data[['buy']].values
-        x_test = testing_data[['volatility', 'liquidity', '52 week high', 'momentum']].values
-        svc_clf = tool.svc_model(x, y)
-        if svc_clf is not False:
-            y_pred = svc_clf.predict(x_test)
-            testing_data.loc[:, 'svc'] = y_pred
-            testing_data = testing_data[testing_data['svc']==1]
-        x_test = testing_data[['volatility', 'liquidity', '52 week high', 'momentum']].values
-        rft_clf = tool.rft_model(x, y)
-        if rft_clf is not False:
-            y_pred = rft_clf.predict(x_test)
-            testing_data.loc[:, 'rtf'] = y_pred
-            testing_data = testing_data[testing_data['rtf']==1]
+            test = tool.price_data.merge(testing_data[['ticker', 'class']], left_on=['Ticker', 'Class'], right_on=['ticker', 'class'])
+            our_revenue.append(sum(test[test['Date']==str(a_date[index+1])]['PRC'])/sum(test[test['Date']==date]['PRC']))
 
-        test = tool.price_data.merge(testing_data[['ticker', 'class']], left_on=['Ticker', 'Class'], right_on=['ticker', 'class'])
-        our_revenue.append(sum(test[test['Date']==str(a_date[index+1])]['PRC'])/sum(test[test['Date']==date]['PRC']))
 
-        a=list(set(list(tool.f13_data[tool.f13_data['Date']==seanson_date]['Ticker'])).intersection(set(list(testing_data['ticker']))))
-        intersection_revenue.append(sum(test[test['Date']==str(a_date[index+1])].loc[test['Ticker'].isin(a)]['PRC'])\
-                                    /sum(test[test['Date']==date].loc[test['Ticker'].isin(a)]['PRC']))
-
-        def abcd(df_col):
-            if df_col == 'A':
-                return df_col
-            else:
-                return 0
-        tdf = tool.f13_data[tool.f13_data['Date']==seanson_date][['Ticker', 'Class']]
-        tdf['Class'] = tdf['Class'].apply(abcd)
-        test1 = tool.price_data.merge(tdf, on=['Ticker', 'Class'])
-        lone_pine_revenue.append(sum(list(test1[test1['Date']==str(a_date[index+1])]['PRC'])) / sum(list(test1[test1['Date']==date]['PRC'])))
-        return our_revenue+intersection_revenue+lone_pine_revenue
+            def abcd(df_col):
+                if df_col == 'A':
+                    return df_col
+                else:
+                    return 0
+            tdf = tool.f13_data[tool.f13_data['Date']==seanson_date][['Ticker', 'Class']]
+            tdf['Class'] = tdf['Class'].apply(abcd)
+            test1 = tool.price_data.merge(tdf, on=['Ticker', 'Class'])
+            lone_pine_revenue.append(sum(list(test1[test1['Date']==str(a_date[index+1])]['PRC'])) / sum(list(test1[test1['Date']==date]['PRC'])))
+            return our_revenue+lone_pine_revenue
+        except:
+            return date
