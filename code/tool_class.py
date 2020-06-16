@@ -162,6 +162,11 @@ class Tool:
         buy_unbuy = pd.concat([buy_tic, unbuy_tic], ignore_index=True, sort=False)
         
         all_date = sorted(list(set(self.price_data['Date'].astype('int'))))
+        final_date = all_date[-1]
+        if str(final_date)[4:] == '12':
+            all_date.append(final_date + 100 - 11)
+        else:
+            all_date.append(final_date + 1)
         index = all_date.index(int(date))
         start = index - 12
         end = index
@@ -200,7 +205,7 @@ class Tool:
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
         score_mean = score_sum / 10
-        if score_mean >= 0.78:
+        if score_mean >= 0.75:
             clf = SVC(kernel='rbf')
             clf.fit(x, y.ravel())
             return clf
@@ -217,7 +222,7 @@ class Tool:
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
         score_mean = score_sum / 10
-        if score_mean >= 0.78:
+        if score_mean >= 0.75:
             model = RandomForestClassifier(n_estimators=1000)
             model.fit(x, y.ravel())
             return model

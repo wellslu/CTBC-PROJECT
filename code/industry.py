@@ -3,19 +3,20 @@ import pandas as pd
 def indus_sort(data, date):
     pre_date = []
     date_list = sorted(list(set(data['Date'])))
-    last_date = int(date[-1])
-    # insert newest date
-    if last_date % 4 == 0:
-        date_list.append(str(last_date+100-12+3))
-    else:
-        date_list.append(str(last_date+3))
-    # get pre 4 seasons date
+    # last_date = int(date[-1])
+    # # insert newest date
+    # if last_date % 4 == 0:
+    #     date_list.append(str(last_date+100-12+3))
+    # else:
+    #     date_list.append(str(last_date+3))
+    # # get pre 4 seasons date
     index = date_list.index(date)
     for r in range(4):
-        if index > 0:
-            index-=1
+        if index >= 0:
             pre_date.append(date_list[index])
-    
+            index-=1
+        else:
+            break
     data = data[data['Date'].isin(pre_date)]
     data2 = data[data['gsector'].notnull()]
     data4 = data[data['ggroup'].notnull()]
