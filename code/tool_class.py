@@ -205,7 +205,7 @@ class Tool:
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
         score_mean = score_sum / 5 #var:10 means 10 times testing
-        if score_mean >= 0.75:  #var:0.75 means thresthold
+        if score_mean >= 0.7:  #var:0.75 means thresthold
             clf = SVC(kernel='rbf')
             clf.fit(x, y.ravel())
             return clf
@@ -222,7 +222,7 @@ class Tool:
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
         score_mean = score_sum / 5 #var:10 means 10 times testing
-        if score_mean >= 0.75: #var:0.75 means thresthold
+        if score_mean >= 0.7: #var:0.75 means thresthold
             model = RandomForestClassifier(n_estimators=1000)
             model.fit(x, y.ravel())
             return model
