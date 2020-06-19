@@ -11,7 +11,7 @@ def indus_sort(data, date):
     #     date_list.append(str(last_date+3))
     # # get pre 4 seasons date
     index = date_list.index(date)
-    for r in range(8):
+    for r in range(6):# season
         if index >= 0:
             pre_date.append(date_list[index])
             index-=1

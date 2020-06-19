@@ -90,15 +90,47 @@ class Tool:
         all_company = self.industry_filter(all_company, gsector_sort)
         
         ticker_list = list(set(self.f13_data[self.f13_data['Date'].isin(season_date_list)]['Ticker']))
-        
-        buy_tic = all_company[all_company['ticker'].isin(ticker_list)]
-        buy_tic.loc[:, 'buy'] = 1
+#         ticker_list_df = self.f13_data[self.f13_data['Date'].isin(season_date_list)]
+        f13_data = self.f13_data
+        price_data = self.price_data
+        f13_data = f13_data[f13_data['Date'].isin(season_date_list)]
+        all_date = sorted(list(set(price_data['Date'].astype('int'))))
+        final1 = pd.DataFrame(columns=['ticker', 'class', 'volatility', 'liquidity', '52 week high', 'momentum'])
+        for date1, df in f13_data.groupby('Date'):
+            index = all_date.index(int(date1))
+            start = index - 12
+            end = index
+            if start < 0:
+                start = 0
+            last_12month = all_date[start:end]
+            last_12month = [str(i) for i in last_12month]
+            last_year_price = price_data[price_data['Date'].isin(last_12month)]
+            df = last_year_price.merge(df[['Ticker', 'Class']], on=['Ticker', 'Class'])
+            ticker_list = list(df[df['Date']==last_12month[-1]]['Ticker'])
+            df = df[df['Ticker'].isin(ticker_list)]
+            for group, df1 in df.groupby(['Ticker', 'Class']):
+                ticker, cls = group
+                max_price = max(df1['ASKHI'])
+                min_price = min(df1['BIDLO'])
+                week_high = max_price / min_price
+                df1 = df1.sort_values('Date').reset_index(drop=True)
+                df_len = len(df1)
+                mom = np.mean(df1[df_len-2:df_len]['PRC']) / np.mean(df1['PRC'])
+                df1 = df1[df1['Date']==last_12month[-1]].reset_index(drop=True)
+                vol = df1['VOL'][0]
+                liq = vol / df1['SHROUT'][0]
+                final1.loc[-1] = [ticker, cls, vol, liq, week_high, mom]
+                final1 = final1.reset_index(drop=True)
+        final1.loc[:, 'buy'] = 1
+#         buy_tic = all_company.merge(ticker_list_df[['Date', 'Ticker']], left_on='ticker', right_on='Ticker')
+#         buy_tic.drop('Ticker', axis=1, inplace=True)
+#         buy_tic.loc[:, 'buy'] = 1
         unbuy_tic = all_company[~all_company['ticker'].isin(ticker_list)]
         unbuy_tic = self.cma_hml(unbuy_tic)
-        unbuy_tic.loc[:, 'buy'] = 0
-        buy_unbuy = pd.concat([buy_tic, unbuy_tic], ignore_index=True, sort=False)
+#         unbuy_tic.loc[:, 'buy'] = 0
+#         buy_unbuy = pd.concat([buy_tic, unbuy_tic], ignore_index=True, sort=False)
         
-        all_date = sorted(list(set(self.price_data['Date'].astype('int'))))
+#         all_date = sorted(list(set(self.price_data['Date'].astype('int'))))
         index = all_date.index(int(date))
         start = index - 12
         end = index
@@ -107,9 +139,9 @@ class Tool:
         last_12month = all_date[start:end]
         last_12month = [str(i) for i in last_12month]
         last_year_price = self.price_data[self.price_data['Date'].isin(last_12month)]
-        last_year_price = last_year_price.merge(buy_unbuy[['ticker', 'class', 'buy']],\
+        last_year_price = last_year_price.merge(unbuy_tic[['ticker', 'class']],\
                                                 left_on=['Ticker', 'Class'], right_on=['ticker', 'class'])
-        final = pd.DataFrame(columns=['ticker', 'class', 'volatility', 'liquidity', '52 week high', 'momentum'])
+        final2 = pd.DataFrame(columns=['ticker', 'class', 'volatility', 'liquidity', '52 week high', 'momentum'])
         
         for group, df in last_year_price.groupby(['Ticker', 'Class']):
             ticker, cls = group
@@ -122,9 +154,11 @@ class Tool:
             df = df[df['Date']==last_date].reset_index(drop=True)
             vol = df['VOL'][0]
             liq = vol / df['SHROUT'][0]
-            final.loc[-1] = [ticker, cls, vol, liq, week_high, mom]
-            final = final.reset_index(drop=True)
-        feature_data = buy_unbuy[['ticker', 'class', 'buy']].merge(final, on=['ticker', 'class'])
+            final2.loc[-1] = [ticker, cls, vol, liq, week_high, mom]
+            final2 = final2.reset_index(drop=True)
+        final2.loc[:, 'buy'] = 0
+#         feature_data = buy_unbuy[['ticker', 'class', 'buy']].merge(final, on=['ticker', 'class'])
+        feature_data = pd.concat([final1, final2], ignore_index=True, sort=False)
         return feature_data
     
     def testing_set(self):
@@ -162,11 +196,6 @@ class Tool:
         buy_unbuy = pd.concat([buy_tic, unbuy_tic], ignore_index=True, sort=False)
         
         all_date = sorted(list(set(self.price_data['Date'].astype('int'))))
-        final_date = all_date[-1]
-        if str(final_date)[4:] == '12':
-            all_date.append(final_date + 100 - 11)
-        else:
-            all_date.append(final_date + 1)
         index = all_date.index(int(date))
         start = index - 12
         end = index
@@ -197,15 +226,15 @@ class Tool:
     
     def svc_model(self, x, y):
         score_sum = 0
-        for i in range(5): #var:10 means 10 times testing
+        for i in range(5):
             x_train, x_test, y_train, y_test = train_test_split(x, y.ravel(), test_size=0.25)
             clf = SVC(kernel='rbf')
             clf.fit(x_train, y_train)
             y_pred = clf.predict(x_test)
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
-        score_mean = score_sum / 5 #var:10 means 10 times testing
-        if score_mean >= 0.7:  #var:0.75 means thresthold
+        score_mean = score_sum / 5
+        if score_mean >= 0.7:
             clf = SVC(kernel='rbf')
             clf.fit(x, y.ravel())
             return clf
@@ -214,15 +243,15 @@ class Tool:
     
     def rft_model(self, x, y):
         score_sum = 0
-        for i in range(5): #var:10 means 10 times testing
+        for i in range(5):
             x_train, x_test, y_train, y_test = train_test_split(x, y.ravel(), test_size=0.25)
             model = RandomForestClassifier(n_estimators=1000)
             model.fit(x_train, y_train)
             y_pred = model.predict(x_test)
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
-        score_mean = score_sum / 5 #var:10 means 10 times testing
-        if score_mean >= 0.7: #var:0.75 means thresthold
+        score_mean = score_sum / 5
+        if score_mean >= 0.7:
             model = RandomForestClassifier(n_estimators=1000)
             model.fit(x, y.ravel())
             return model

@@ -41,7 +41,7 @@ class Pre_Processing:
         elif df_col == 'CLD':
             return 'D'
         else:
-            return df_col
+            return '0'
 
     @staticmethod
     def date_split(aa):
@@ -52,6 +52,11 @@ class Pre_Processing:
         return abs(df_col)
 
     def launch(self, f13_data, crsp_data):
+        a_date = []
+        for i in range(200501, 201913, 1):
+            i = str(i)
+            if 1 <= int(i[4:]) <= 12:
+                a_date.append(i)
         f13_data.drop(['% Port', '% OS', 'Hist', 'Change', 'Change.1'], axis=1, inplace=True)
         f13_data['Ticker'] = f13_data['Ticker'].astype('str')
         f13_data['Class'] = f13_data['Class'].astype('str')
@@ -125,7 +130,7 @@ class Pre_Processing:
         #         f13_data_a['price'] = f13_data_a.apply(self.division, axis=1)
 
         crsp_data = crsp_data[crsp_data['TICKER'].notnull()]
-        crsp_data.loc[:, 'SHRCLS'] = crsp_data['SHRCLS'].replace(np.nan, 0)
+        crsp_data.loc[:, 'SHRCLS'] = crsp_data['SHRCLS'].replace(np.nan, '0')
         crsp_data = crsp_data.sort_values(['TICKER', 'date', 'PRC'])
         crsp_data = crsp_data.drop('PERMNO', axis=1).drop_duplicates(['date', 'TICKER', 'SHRCLS'], keep='first')
         crsp_data = crsp_data[crsp_data['PRC'].notnull()]
