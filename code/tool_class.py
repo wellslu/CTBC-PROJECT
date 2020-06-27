@@ -254,7 +254,7 @@ class Tool:
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
         score_mean = score_sum / 5
-        if score_mean >= 0.9:
+        if score_mean >= 0.7:
             clf = SVC(kernel='rbf')
             clf.fit(x, y.ravel())
             return clf
@@ -271,7 +271,7 @@ class Tool:
             score = accuracy_score(y_test, y_pred)
             score_sum = score_sum + score
         score_mean = score_sum / 5
-        if score_mean >= 0.9:
+        if score_mean >= 0.7:
             model = RandomForestClassifier(n_estimators=1000)
             model.fit(x, y.ravel())
             return model
