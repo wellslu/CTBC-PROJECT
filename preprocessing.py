@@ -244,5 +244,5 @@ if __name__ == '__main__':
         results = pd.concat([results, r], ignore_index=True)
 	results.to_csv('2019-09-30 21:30:00_stock_info.csv', index=False, encoding='utf_8_sig')
 	co_matrix = classificate(results)
-	with open('./co_matrix.txt') as f:
+	with open('./co_matrix.txt', 'w') as f:
 		f.write(str(co_matrix))
